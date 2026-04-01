@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나의 일기장</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --paper: #fffdf7;
+    --ink: #2c1810;
+    --ink-light: #6b4c3b;
+    --accent: #c0392b;
+    --accent-soft: #e8d5c4;
+    --rule: #d4c4b0;
+    --shadow: rgba(44, 24, 16, 0.12);
+    --gold: #b8860b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(192,57,43,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(184,134,11,0.05) 0%, transparent 50%);
+    min-height: 100vh;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--ink);
+  }
+
+  /* ════════════════════════════════
+     LOGIN PAGE
+  ════════════════════════════════ */
+  #loginPage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .login-wrap { width: 100%; max-width: 400px; }
+  .login-deco { text-align: center; margin-bottom: 36px; }
+  .login-icon {
+    font-size: 3.4rem; display: block; margin-bottom: 14px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)}
+  }
+  .login-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: 2.2rem; font-weight: 800;
+    color: var(--ink); letter-spacing: -0.02em;
+  }
+  .login-sub {
+    font-size: 0.75rem; color: var(--ink-light);
+    letter-spacing: 0.14em; text-transform: uppercase; margin-top: 6px;
+  }
+  .login-card {
+    background: var(--paper);
+    border-radius: 3px;
+    box-shadow: 0 2px 8px var(--shadow), 0 20px 60px var(--shadow), inset 0 0 0 1px rgba(212,196,176,0.6);
+    padding: 40px 36px;
+    position: relative; overflow: hidden;
+  }
+  .login-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--gold), var(--accent));
+  }
+  .login-field { margin-bottom: 20px; }
+  .login-field label {
+    display: block; font-size: 0.74rem; color: var(--ink-light);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; font-weight: 500;
+  }
+  .login-field input {
+    width: 100%; border: 1.5px solid var(--rule); background: var(--bg);
+    padding: 12px 16px; font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.95rem; color: var(--ink); border-radius: 2px; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .login-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(192,57,43,0.08); }
+  .login-field input::placeholder { color: var(--rule); }
+  .login-error {
+    color: var(--accent); font-size: 0.78rem; margin-top: 6px;
+    display: none; align-items: center; gap: 5px;
+  }
+  .login-error.show { display: flex; }
+  .login-btn {
+    width: 100%; padding: 14px; background: var(--ink); color: var(--paper);
+    border: none; font-family: 'Nanum Myeongjo', serif;
+    font-size: 1rem; letter-spacing: 0.06em; border-radius: 2px; cursor: pointer;
+    margin-top: 6px; transition: background 0.2s, transform 0.15s;
+    position: relative; overflow: hidden;
+  }
+  .login-btn::after {
+    content: ''; position: absolute; inset: 0; background: var(--accent);
+    transform: scaleX(0); transform-origin: left; transition: transform 0.25s ease;
+  }
+  .login-btn:hover::after { transform: scaleX(1); }
+  .login-btn span { position: relative; z-index: 1; }
+  .login-btn:active { transform: scale(0.98); }
+  @keyframes shake {
+    10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)}
+    30%,50%,70%{transform:translateX(-4px)} 40%,60%{transform:translateX(4px)}
+  }
+  .login-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97); }
+  .login-hint { text-align: center; margin-top: 18px; font-size: 0.74rem; color: #ccc; }
+
+  /* ════════════════════════════════
+     MAIN APP
+  ════════════════════════════════ */
+  #appPage { display: none; }
+
+  header { text-align: center; padding: 40px 20px 28px; position: relative; }
+  header::after {
+    content: ''; display: block; width: 120px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 14px auto 0;
+  }
+  .header-inner { position: relative; display: inline-block; }
+  .app-title {
+    font-family: 'Nanum Myeongjo', serif;
+    font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800;
+    letter-spacing: -0.02em; color: var(--ink);
+  }
+  .app-subtitle { font-size: 0.78rem; color: var(--ink-light); letter-spacing: 0.15em; margin-top: 5px; text-transform: uppercase; }
+  .logout-btn {
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    background: transparent; border: 1px solid var(--rule); color: var(--ink-light);
+    font-size: 0.78rem; padding: 6px 14px; border-radius: 20px;
+    cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s;
+  }
+  .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .container {
+    max-width: 900px; margin: 0 auto;
+    padding: 0 20px 80px;
+    display: grid; grid-template-columns: 1fr 320px;
+    gap: 28px; align-items: start;
+  }
+  @media (max-width: 720px) {
+    .container { grid-template-columns: 1fr; }
+    .sidebar { order: -1; }
+    .logout-btn { font-size: 0.7rem; padding: 5px 10px; }
+  }
+
+  .card {
+    background: var(--paper); border-radius: 2px;
+    box-shadow: 0 1px 3px var(--shadow), 0 8px 32px var(--shadow), inset 0 0 0 1px rgba(212,196,176,0.5);
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; left: 52px; top: 0; bottom: 0;
+    width: 1px; background: rgba(192,57,43,0.25);
+  }
+
+  .write-panel { padding: 32px 32px 32px 68px; }
+  .date-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--rule);
+  }
+  .date-display { font-family: 'Nanum Myeongjo', serif; font-size: 1.05rem; color: var(--ink); }
+  .date-display span { color: var(--accent); font-weight: 700; }
+  .weather-select {
+    margin-left: auto; border: none; background: var(--accent-soft);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 0.85rem; color: var(--ink-light); cursor: pointer; outline: none;
+  }
+  .mood-row { display: flex; gap: 8px; margin-bottom: 20px; }
+  .mood-btn {
+    flex: 1; padding: 8px 4px; border: 1px solid var(--rule); background: transparent;
+    border-radius: 8px; cursor: pointer; font-size: 1.2rem; text-align: center; transition: all 0.15s;
+  }
+  .mood-btn:hover,.mood-btn.active { background: var(--accent-soft); border-color: var(--accent); transform: scale(1.05); }
+  .mood-btn .mood-label { display: block; font-size: 0.62rem; color: var(--ink-light); margin-top: 3px; font-family: 'Noto Sans KR', sans-serif; }
+  .title-input {
+    width: 100%; border: none; outline: none; background: transparent;
+    font-family: 'Nanum Myeongjo', serif; font-size: 1.3rem; font-weight: 700;
+    color: var(--ink); padding: 0 0 12px; border-bottom: 1px solid var(--rule); margin-bottom: 16px;
+  }
+  .title-input::placeholder { color: var(--rule); }
+  .diary-textarea {
+    width: 100%; min-height: 240px; border: none; outline: none; background: transparent;
+    font-family: 'Nanum Myeongjo', serif; font-size: 1rem; line-height: 2;
+    color: var(--ink); resize: none;
+    background-image: repeating-linear-gradient(transparent, transparent calc(2em - 1px), var(--rule) calc(2em - 1px), var(--rule) 2em);
+    background-position: 0 1.6em; padding-bottom: 8px;
+  }
+  .diary-textarea::placeholder { color: var(--rule); }
+  .write-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--rule);
+  }
+  .char-count { font-size: 0.78rem; color: var(--ink-light); letter-spacing: 0.05em; }
+  .save-btn {
+    background: var(--ink); color: var(--paper); border: none;
+    padding: 12px 28px; font-family: 'Nanum Myeongjo', serif;
+    font-size: 0.95rem; letter-spacing: 0.05em; border-radius: 2px;
+    cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+  }
+  .save-btn:hover { background: var(--accent); transform: translateY(-1px); }
+  .save-btn:active { transform: translateY(0); }
+  .save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .sidebar { display: flex; flex-direction: column; gap: 20px; }
+  .sidebar-card { padding: 20px; }
+  .sidebar-title {
+    font-family: 'Nanum Myeongjo', serif; font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase;
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ── Sheets 연동 UI ── */
+  .sheets-desc { font-size: 0.78rem; color: var(--ink-light); line-height: 1.65; margin-bottom: 12px; }
+  .sheets-input-row { display: flex; flex-direction: column; gap: 8px; }
+  .sheets-url-input {
+    width: 100%; border: 1.5px solid var(--rule); background: var(--bg);
+    padding: 10px 12px; font-size: 0.8rem; color: var(--ink);
+    border-radius: 2px; outline: none; font-family: 'Noto Sans KR', sans-serif;
+    transition: border-color 0.15s;
+  }
+  .sheets-url-input:focus { border-color: var(--accent); }
+  .sheets-url-input::placeholder { color: var(--rule); font-size: 0.73rem; }
+  .sheets-connect-btn {
+    width: 100%; padding: 10px; background: var(--ink); color: var(--paper);
+    border: none; border-radius: 2px; font-family: 'Nanum Myeongjo', serif;
+    font-size: 0.9rem; cursor: pointer; transition: background 0.2s;
+  }
+  .sheets-connect-btn:hover { background: var(--accent); }
+
+  .sheets-connected-box {
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    border: 1.5px solid #a5d6a7; border-radius: 2px;
+    padding: 14px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .sheets-badge { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #2e7d32; font-weight: 500; }
+  .sheets-badge-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #27ae60; flex-shrink: 0;
+    animation: pglow 2s infinite;
+  }
+  @keyframes pglow {
+    0%,100%{box-shadow:0 0 0 0 rgba(39,174,96,0.4)} 50%{box-shadow:0 0 0 6px rgba(39,174,96,0)}
+  }
+  .sheets-open-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px; background: white; border: 1px solid #a5d6a7;
+    border-radius: 2px; text-decoration: none; color: #2e7d32;
+    font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+  }
+  .sheets-open-btn:hover { background: #27ae60; color: white; border-color: #27ae60; }
+  .sheets-disconnect {
+    background: transparent; border: none; color: #aaa; font-size: 0.72rem;
+    cursor: pointer; text-align: right; text-decoration: underline;
+  }
+  .sheets-disconnect:hover { color: var(--accent); }
+
+  /* ── Google Auth ── */
+  .google-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule); }
+  .google-section-label { font-size: 0.74rem; color: var(--ink-light); margin-bottom: 8px; }
+  .google-btn {
+    width: 100%; padding: 11px; border: 1.5px solid var(--rule); background: var(--paper);
+    border-radius: 2px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 10px; font-family: 'Noto Sans KR', sans-serif;
+    font-size: 0.85rem; color: var(--ink); transition: all 0.2s;
+  }
+  .google-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .google-logo { width: 16px; height: 16px; flex-shrink: 0; }
+  .auth-status { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--ink-light); margin-top: 8px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+  .status-dot.connected { background: #27ae60; }
+  .status-dot.error { background: var(--accent); }
+  .api-setup-link {
+    display: block; text-align: right; margin-top: 8px;
+    font-size: 0.72rem; color: var(--ink-light); cursor: pointer; text-decoration: underline;
+  }
+  .api-setup-link:hover { color: var(--accent); }
+
+  /* ── Stats ── */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-box { background: var(--accent-soft); border-radius: 2px; padding: 12px; text-align: center; }
+  .stat-num { font-family: 'Nanum Myeongjo', serif; font-size: 1.5rem; font-weight: 800; color: var(--ink); }
+  .stat-label { font-size: 0.72rem; color: var(--ink-light); margin-top: 3px; }
+
+  /* ── Entries ── */
+  .entries-list { display: flex; flex-direction: column; gap: 8px; max-height: 360px; overflow-y: auto; }
+  .entries-list::-webkit-scrollbar { width: 3px; }
+  .entries-list::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 2px; }
+  .entry-item { padding: 10px 12px; border-left: 2px solid var(--rule); cursor: pointer; transition: all 0.15s; border-radius: 0 2px 2px 0; }
+  .entry-item:hover { border-left-color: var(--accent); background: var(--accent-soft); }
+  .entry-date { font-size: 0.72rem; color: var(--ink-light); letter-spacing: 0.05em; }
+  .entry-title { font-family: 'Nanum Myeongjo', serif; font-size: 0.9rem; color: var(--ink); margin-top: 2px; }
+  .entry-preview { font-size: 0.75rem; color: var(--ink-light); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry-mood { float: right; font-size: 1rem; }
+  .no-entries { text-align: center; color: var(--rule); font-size: 0.85rem; padding: 20px 0; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--ink); color: var(--paper);
+    padding: 12px 24px; border-radius: 2px; font-size: 0.88rem;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 999; white-space: nowrap; box-shadow: 0 8px 32px var(--shadow);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: #27ae60; }
+  .toast.error { background: var(--accent); }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(44,24,16,0.5); backdrop-filter: blur(4px);
+    z-index: 100; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--paper); border-radius: 2px; padding: 36px; max-width: 460px; width: 100%; box-shadow: 0 24px 80px rgba(44,24,16,0.3); }
+  .modal-title { font-family: 'Nanum Myeongjo', serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; }
+  .modal-desc { font-size: 0.82rem; color: var(--ink-light); line-height: 1.7; margin-bottom: 20px; }
+  .modal label { display: block; font-size: 0.76rem; color: var(--ink-light); margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .modal input { width: 100%; border: 1px solid var(--rule); background: var(--bg); padding: 10px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 0.88rem; color: var(--ink); border-radius: 2px; outline: none; margin-bottom: 16px; }
+  .modal input:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; }
+  .btn-primary { flex: 1; padding: 12px; background: var(--ink); color: var(--paper); border: none; font-family: 'Nanum Myeongjo', serif; font-size: 0.95rem; border-radius: 2px; cursor: pointer; }
+  .btn-primary:hover { background: var(--accent); }
+  .btn-secondary { padding: 12px 20px; background: transparent; color: var(--ink-light); border: 1px solid var(--rule); font-family: 'Noto Sans KR', sans-serif; font-size: 0.85rem; border-radius: 2px; cursor: pointer; }
+  .setup-steps { background: var(--accent-soft); border-radius: 2px; padding: 14px; margin-bottom: 20px; font-size: 0.79rem; color: var(--ink-light); line-height: 1.9; }
+  .setup-steps a { color: var(--accent); }
+  .setup-steps ol { padding-left: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="loginPage">
+  <div class="login-wrap">
+    <div class="login-deco">
+      <span class="login-icon">📖</span>
+      <div class="login-title">나의 일기장</div>
+      <div class="login-sub">My Private Diary</div>
+    </div>
+    <div class="login-card" id="loginCard">
+      <div class="login-field">
+        <label>아이디</label>
+        <input type="text" id="loginId" placeholder="아이디를 입력하세요" autocomplete="username">
+      </div>
+      <div class="login-field">
+        <label>비밀번호</label>
+        <input type="password" id="loginPw" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+        <div class="login-error" id="loginError">⚠ 아이디 또는 비밀번호가 올바르지 않습니다.</div>
+      </div>
+      <button class="login-btn" onclick="doLogin()"><span>로그인</span></button>
+      <div class="login-hint">기본 계정: admin / admin</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ APP ═══════════════════ -->
+<div id="appPage">
+  <header>
+    <div class="header-inner">
+      <div class="app-title">📖 나의 일기장</div>
+      <div class="app-subtitle">My Private Diary · Google Sheets 연동</div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">🚪 로그아웃</button>
+  </header>
+
+  <div class="container">
+    <!-- WRITE PANEL -->
+    <div class="card write-panel">
+      <div class="date-row">
+        <div class="date-display" id="dateDisplay"></div>
+        <select class="weather-select" id="weatherSelect">
+          <option>☀️ 맑음</option><option>⛅ 구름</option><option>🌧️ 비</option>
+          <option>❄️ 눈</option><option>🌫️ 흐림</option><option>🌈 무지개</option>
+        </select>
+      </div>
+      <div class="mood-row">
+        <button class="mood-btn" data-mood="😄 행복">😄<span class="mood-label">행복</span></button>
+        <button class="mood-btn" data-mood="😊 평온">😊<span class="mood-label">평온</span></button>
+        <button class="mood-btn" data-mood="😐 보통">😐<span class="mood-label">보통</span></button>
+        <button class="mood-btn" data-mood="😔 슬픔">😔<span class="mood-label">슬픔</span></button>
+        <button class="mood-btn" data-mood="😤 화남">😤<span class="mood-label">화남</span></button>
+        <button class="mood-btn" data-mood="😴 피곤">😴<span class="mood-label">피곤</span></button>
+      </div>
+      <input class="title-input" id="titleInput" type="text" placeholder="오늘의 제목을 적어주세요...">
+      <textarea class="diary-textarea" id="diaryText" placeholder="오늘 하루는 어떠셨나요? 마음속 이야기를 자유롭게 적어보세요..."></textarea>
+      <div class="write-footer">
+        <div class="char-count" id="charCount">0 자</div>
+        <button class="save-btn" id="saveBtn" onclick="saveDiary()"><span>💾</span> 저장하기</button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <!-- ① Google Sheets 통합 연동 -->
+      <div class="card sidebar-card">
+        <div class="sidebar-title">📊 Google Sheets 연동</div>
+
+        <!-- 연결 전 -->
+        <div id="sheetsSetup">
+          <div class="sheets-desc">
+            구글 드라이브의 스프레드시트 링크 하나를 연결하면,<br>
+            모든 일기가 해당 시트에 통합 저장됩니다.
+          </div>
+          <div class="sheets-input-row">
+            <input class="sheets-url-input" id="sheetsUrlInput"
+              placeholder="https://docs.google.com/spreadsheets/d/...">
+            <button class="sheets-connect-btn" onclick="connectSheets()">🔗 이 시트에 연결하기</button>
+          </div>
+
+          <div class="google-section">
+            <div class="google-section-label">Google 계정 연결 (시트에 직접 쓰기 위해 필요)</div>
+            <button class="google-btn" id="authBtn" onclick="handleAuth()">
+              <svg class="google-logo" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Google 계정으로 로그인
+            </button>
+            <div class="auth-status">
+              <div class="status-dot" id="statusDot"></div>
+              <span id="statusText">미연결</span>
+            </div>
+            <span class="api-setup-link" onclick="openSetupModal()">⚙️ API 키 설정</span>
+          </div>
+        </div>
+
+        <!-- 연결 후 -->
+        <div class="sheets-connected-box" id="sheetsConnected" style="display:none;">
+          <div class="sheets-badge">
+            <div class="sheets-badge-dot"></div>
+            스프레드시트 연결됨
+          </div>
+          <a href="#" id="sheetsOpenLink" target="_blank" class="sheets-open-btn">
+            📊 Google Sheets 열기 →
+          </a>
+          <div class="auth-status" id="sheetsAuthStatus" style="margin-top:4px;">
+            <div class="status-dot" id="statusDot2"></div>
+            <span id="statusText2">Google 미연결 — 로컬만 저장</span>
+          </div>
+          <button class="sheets-disconnect" onclick="disconnectSheets()">시트 연결 해제</button>
+        </div>
+      </div>
+
+      <!-- 통계 -->
+      <div class="card sidebar-card">
+        <div class="sidebar-title">📈 나의 기록</div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">총 일기 수</div></div>
+          <div class="stat-box"><div class="stat-num" id="statStreak">0</div><div class="stat-label">작성 일수</div></div>
+          <div class="stat-box"><div class="stat-num" id="statWords">0</div><div class="stat-label">총 글자수</div></div>
+          <div class="stat-box"><div class="stat-num" id="statMonth">0</div><div class="stat-label">이번달</div></div>
+        </div>
+      </div>
+
+      <!-- 최근 일기 -->
+      <div class="card sidebar-card">
+        <div class="sidebar-title">📅 최근 일기</div>
+        <div class="entries-list" id="entriesList">
+          <div class="no-entries">아직 작성된 일기가 없어요</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- API 설정 모달 -->
+<div class="modal-overlay" id="setupModal">
+  <div class="modal">
+    <div class="modal-title">⚙️ Google OAuth 설정</div>
+    <div class="modal-desc">Google Sheets에 직접 데이터를 쓰려면 OAuth Client ID가 필요합니다.</div>
+    <div class="setup-steps">
+      <ol>
+        <li><a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a> 접속</li>
+        <li>Google Sheets API 활성화</li>
+        <li>OAuth 2.0 클라이언트 ID 생성 (웹 애플리케이션)</li>
+        <li>승인된 JS 원본에 이 페이지 주소 추가</li>
+        <li>클라이언트 ID 붙여넣기</li>
+      </ol>
+    </div>
+    <label>Google OAuth Client ID</label>
+    <input type="text" id="clientIdInput" placeholder="xxxxxxxx.apps.googleusercontent.com">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSetupModal()">취소</button>
+      <button class="btn-primary" onclick="saveSetup()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ LOGIN ══
+const CRED = { id: 'admin', pw: 'admin' };
+
+function doLogin() {
+  const id = document.getElementById('loginId').value.trim();
+  const pw = document.getElementById('loginPw').value;
+  const err = document.getElementById('loginError');
+  const card = document.getElementById('loginCard');
+  if (id === CRED.id && pw === CRED.pw) {
+    err.classList.remove('show');
+    sessionStorage.setItem('diary_auth', '1');
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('appPage').style.display = 'block';
+    init();
+  } else {
+    err.classList.add('show');
+    card.classList.remove('login-shake');
+    void card.offsetWidth;
+    card.classList.add('login-shake');
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('diary_auth');
+  document.getElementById('appPage').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('loginId').value = '';
+  document.getElementById('loginPw').value = '';
+  document.getElementById('loginError').classList.remove('show');
+}
+
+['loginId','loginPw'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+});
+
+// auto restore
+if (sessionStorage.getItem('diary_auth') === '1') {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appPage').style.display = 'block';
+  // init called after DOM ready — safe here since script is at bottom
+  window.addEventListener('DOMContentLoaded', init, { once: true });
+  // If DOMContentLoaded already fired:
+  if (document.readyState !== 'loading') init();
+}
+
+// ══ STATE ══
+let entries = JSON.parse(localStorage.getItem('diary_entries') || '[]');
+let settings = JSON.parse(localStorage.getItem('diary_settings') || '{}');
+let selectedMood = '';
+let gapiReady = false;
+let isSignedIn = false;
+let sheetsUrl = localStorage.getItem('diary_sheets_url') || '';
+let spreadsheetId = extractSheetId(sheetsUrl);
+let _initDone = false;
+
+// ══ INIT ══
+function init() {
+  if (_initDone) return;
+  _initDone = true;
+  updateDateDisplay();
+  updateCharCount();
+  renderEntries();
+  updateStats();
+  renderSheetsStatus();
+  if (settings.clientId) loadGoogleAPI();
+  setInterval(updateDateDisplay, 60000);
+
+  document.querySelectorAll('.mood-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedMood = btn.dataset.mood;
+    });
+  });
+  document.getElementById('diaryText').addEventListener('input', updateCharCount);
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey||e.metaKey) && e.key==='Enter' && sessionStorage.getItem('diary_auth')) saveDiary();
+  });
+}
+
+function updateDateDisplay() {
+  const now = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('dateDisplay').innerHTML =
+    `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 <span>${days[now.getDay()]}요일</span>`;
+}
+
+// ══ SHEETS 링크 연동 ══
+function extractSheetId(url) {
+  if (!url) return '';
+  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : '';
+}
+
+function connectSheets() {
+  const url = document.getElementById('sheetsUrlInput').value.trim();
+  const id = extractSheetId(url);
+  if (!id) { showToast('올바른 Google Sheets URL을 붙여넣어 주세요.', 'error'); return; }
+  sheetsUrl = url; spreadsheetId = id;
+  localStorage.setItem('diary_sheets_url', url);
+  renderSheetsStatus();
+  showToast('스프레드시트가 연결되었습니다! 📊', 'success');
+}
+
+function disconnectSheets() {
+  sheetsUrl = ''; spreadsheetId = '';
+  localStorage.removeItem('diary_sheets_url');
+  renderSheetsStatus();
+  showToast('연결이 해제되었습니다.');
+}
+
+function renderSheetsStatus() {
+  const setup = document.getElementById('sheetsSetup');
+  const connected = document.getElementById('sheetsConnected');
+  if (spreadsheetId) {
+    setup.style.display = 'none';
+    connected.style.display = 'flex';
+    document.getElementById('sheetsOpenLink').href = `https://docs.google.com/spreadsheets/d/${spreadsheetId}`;
+    updateConnectedAuthBadge();
+  } else {
+    setup.style.display = 'block';
+    connected.style.display = 'none';
+    if (sheetsUrl) document.getElementById('sheetsUrlInput').value = sheetsUrl;
+  }
+}
+
+function updateConnectedAuthBadge() {
+  const dot = document.getElementById('statusDot2');
+  const txt = document.getElementById('statusText2');
+  if (!dot || !txt) return;
+  if (isSignedIn) {
+    dot.className = 'status-dot connected';
+    txt.textContent = 'Google 연결됨 — 시트에 자동 저장';
+  } else {
+    dot.className = 'status-dot';
+    txt.textContent = 'Google 미연결 — 로컬만 저장';
+  }
+}
+
+// ══ CHAR COUNT ══
+function updateCharCount() {
+  const len = (document.getElementById('diaryText')||{value:''}).value.length;
+  const el = document.getElementById('charCount');
+  if (el) el.textContent = `${len.toLocaleString()} 자`;
+}
+
+// ══ SAVE ══
+async function saveDiary() {
+  const title = document.getElementById('titleInput').value.trim();
+  const text  = document.getElementById('diaryText').value.trim();
+  if (!text) { showToast('내용을 입력해주세요.', 'error'); return; }
+
+  const now = new Date();
+  const entry = {
+    id: Date.now(),
+    date: formatDate(now), time: formatTime(now),
+    title: title || '제목 없음', content: text,
+    mood: selectedMood || '—',
+    weather: document.getElementById('weatherSelect').value,
+    chars: text.length
+  };
+
+  entries.unshift(entry);
+  localStorage.setItem('diary_entries', JSON.stringify(entries));
+  renderEntries(); updateStats();
+
+  if (isSignedIn && spreadsheetId) {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.innerHTML = '<span>⏳</span> 저장 중...';
+    try {
+      await saveToSheets(entry);
+      showToast('Google Sheets에 저장되었습니다! ✅', 'success');
+    } catch(e) {
+      showToast('로컬 저장 완료. Sheets 오류: ' + e.message, 'error');
+    }
+    btn.disabled = false; btn.innerHTML = '<span>💾</span> 저장하기';
+  } else if (spreadsheetId) {
+    showToast('로컬 저장 완료. Google 계정 연결 시 Sheets에도 저장돼요.', 'success');
+  } else {
+    showToast('로컬에 저장되었습니다. 📝', 'success');
+  }
+
+  document.getElementById('titleInput').value = '';
+  document.getElementById('diaryText').value = '';
+  selectedMood = '';
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+  updateCharCount();
+}
+
+// ══ RENDER ENTRIES ══
+function renderEntries() {
+  const list = document.getElementById('entriesList');
+  if (!list) return;
+  if (!entries.length) { list.innerHTML = '<div class="no-entries">아직 작성된 일기가 없어요</div>'; return; }
+  list.innerHTML = entries.slice(0,20).map(e => `
+    <div class="entry-item" onclick="loadEntry(${e.id})">
+      <span class="entry-mood">${(e.mood||'').split(' ')[0]||''}</span>
+      <div class="entry-date">${e.date} ${e.time}</div>
+      <div class="entry-title">${escHtml(e.title)}</div>
+      <div class="entry-preview">${escHtml(e.content)}</div>
+    </div>
+  `).join('');
+}
+
+function loadEntry(id) {
+  const e = entries.find(x => x.id === id); if (!e) return;
+  document.getElementById('titleInput').value = e.title === '제목 없음' ? '' : e.title;
+  document.getElementById('diaryText').value = e.content;
+  document.getElementById('weatherSelect').value = e.weather;
+  updateCharCount();
+  window.scrollTo({top:0,behavior:'smooth'});
+  showToast(`${e.date} 일기를 불러왔습니다.`);
+}
+
+// ══ STATS ══
+function updateStats() {
+  document.getElementById('statTotal').textContent = entries.length;
+  const total = entries.reduce((s,e)=>s+(e.chars||0),0);
+  document.getElementById('statWords').textContent = total>999?(total/1000).toFixed(1)+'K':total;
+  const now = new Date();
+  document.getElementById('statMonth').textContent =
+    entries.filter(e=>e.date.startsWith(`${now.getFullYear()}년 ${now.getMonth()+1}월`)).length;
+  document.getElementById('statStreak').textContent = [...new Set(entries.map(e=>e.date))].length;
+}
+
+// ══ GOOGLE API ══
+function loadGoogleAPI() {
+  if (document.querySelector('script[src*="apis.google.com"]')) return;
+  const s = document.createElement('script');
+  s.src = 'https://apis.google.com/js/api.js';
+  s.onload = () => gapi.load('client:auth2', initGoogleClient);
+  document.head.appendChild(s);
+}
+
+async function initGoogleClient() {
+  try {
+    await gapi.client.init({
+      clientId: settings.clientId,
+      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4']
+    });
+    gapiReady = true;
+    isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+    updateAuthUI();
+    gapi.auth2.getAuthInstance().isSignedIn.listen(updateAuthUI);
+  } catch(e) { setStatus('API 오류','error'); }
+}
+
+async function handleAuth() {
+  if (!settings.clientId) { openSetupModal(); return; }
+  if (!gapiReady) { showToast('Google API 초기화 중...'); return; }
+  if (isSignedIn) gapi.auth2.getAuthInstance().signOut();
+  else { try { await gapi.auth2.getAuthInstance().signIn(); } catch(e){} }
+}
+
+function updateAuthUI() {
+  if (!gapiReady) return;
+  isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
+  const btn = document.getElementById('authBtn');
+  if (!btn) return;
+  if (isSignedIn) {
+    const u = gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile();
+    btn.innerHTML = `<img src="${u.getImageUrl()}" style="width:16px;height:16px;border-radius:50%;flex-shrink:0"> ${u.getName()} · 로그아웃`;
+    setStatus('Google 연결됨: '+u.getEmail(), 'connected');
+  } else {
+    btn.innerHTML = `<svg class="google-logo" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Google 계정으로 로그인`;
+    setStatus('미연결','');
+  }
+  updateConnectedAuthBadge();
+}
+
+async function saveToSheets(entry) {
+  await gapi.client.sheets.spreadsheets.values.append({
+    spreadsheetId, range:'A:G', valueInputOption:'RAW', insertDataOption:'INSERT_ROWS',
+    resource:{ values:[[entry.date,entry.time,entry.title,entry.content,entry.mood,entry.weather,entry.chars]] }
+  });
+}
+
+function setStatus(msg,type) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  if (txt) txt.textContent = msg;
+  if (dot) dot.className = 'status-dot'+(type?' '+type:'');
+}
+
+// ══ MODAL ══
+function openSetupModal() { document.getElementById('clientIdInput').value=settings.clientId||''; document.getElementById('setupModal').classList.add('open'); }
+function closeSetupModal() { document.getElementById('setupModal').classList.remove('open'); }
+function saveSetup() {
+  const id = document.getElementById('clientIdInput').value.trim();
+  if (!id) { showToast('Client ID를 입력해주세요.','error'); return; }
+  settings.clientId = id;
+  localStorage.setItem('diary_settings', JSON.stringify(settings));
+  closeSetupModal(); loadGoogleAPI();
+  showToast('저장되었습니다. Google 계정을 연결해주세요.');
+}
+
+// ══ UTILS ══
+function formatDate(d){return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;}
+function formatTime(d){return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>
